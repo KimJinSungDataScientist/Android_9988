@@ -1,0 +1,77 @@
+task downloadPosenetModel(type: DownloadUrlTask) {
+    def modelPosenetDownloadUrl = "https://storage.googleapis.com/download.tensorflow.org/models/tflite/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite"
+    doFirst {
+        println "Downloading ${modelPosenetDownloadUrl}"
+    }
+    sourceUrl = "${modelPosenetDownloadUrl}"
+    target = file("src/main/assets/posenet.tflite")
+    onlyIf { !target.exists() }
+}
+
+task downloadMovenetLightningModel(type: DownloadUrlTask) {
+    def modelMovenetLightningDownloadUrl = "https://tfhub.dev/google/lite-model/movenet/singlepose/lightning/tflite/float16/4?lite-format=tflite"
+    doFirst {
+        println "Downloading ${modelMovenetLightningDownloadUrl}"
+    }
+    sourceUrl = "${modelMovenetLightningDownloadUrl}"
+    target = file("src/main/assets/movenet_lightning.tflite")
+    onlyIf { !target.exists() }
+}
+
+task downloadMovenetThunderModel(type: DownloadUrlTask) {
+    def modelMovenetThunderDownloadUrl = "https://tfhub.dev/google/lite-model/movenet/singlepose/thunder/tflite/float16/4?lite-format=tflite"
+    doFirst {
+        println "Downloading ${modelMovenetThunderDownloadUrl}"
+    }
+    sourceUrl = "${modelMovenetThunderDownloadUrl}"
+    target = file("src/main/assets/movenet_thunder.tflite")
+    onlyIf { !target.exists() }
+}
+
+task downloadMovenetMultiPoseModel(type: DownloadUrlTask) {
+    def modelMovenetMultiPoseDownloadUrl = "https://tfhub.dev/google/lite-model/movenet/multipose/lightning/tflite/float16/1?lite-format=tflite"
+    doFirst {
+        println "Downloading ${modelMovenetMultiPoseDownloadUrl}"
+    }
+    sourceUrl = "${modelMovenetMultiPoseDownloadUrl}"
+    target = file("src/main/assets/movenet_multipose_fp16.tflite")
+    onlyIf { !target.exists() }
+}
+
+task downloadPoseClassifierModel(type: DownloadUrlTask) {
+    def modelPoseClassifierDownloadUrl = "https://storage.googleapis.com/download.tensorflow.org/models/tflite/pose_classifier/yoga_classifier.tflite"
+    doFirst {
+        println "Downloading ${modelPoseClassifierDownloadUrl}"
+    }
+    sourceUrl = "${modelPoseClassifierDownloadUrl}"
+    target = file("src/main/assets/classifier.tflite")
+    onlyIf { !target.exists() }
+}
+
+task downloadModel {
+    dependsOn downloadPosenetModel
+    dependsOn downloadMovenetLightningModel
+    dependsOn downloadMovenetThunderModel
+    dependsOn downloadPoseClassifierModel
+    dependsOn downloadMovenetMultiPoseModel
+}
+
+class DownloadUrlTask extends DefaultTask {
+    @Input
+    String sourceUrl
+
+    @OutputFile
+    File target
+
+    @TaskAction
+    void download() {
+        try {
+            ant.get(src: sourceUrl, dest: target)
+            println "Downloaded ${sourceUrl} to ${target}"
+        } catch (Exception e) {
+            println "Failed to download ${sourceUrl}: ${e.message}"
+        }
+    }
+}
+
+preBuild.dependsOn downloadModel
